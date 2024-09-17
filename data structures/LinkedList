@@ -1,0 +1,201 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Listas encadeadas circulares
+// Discente: Gabriel Germano dos Santos Wanderley
+
+//contador para visualizar a quantidade de elementos na lista
+static int contador = 0;
+
+// Estruturas básicas
+typedef struct NoLista {
+  int chave;
+  struct NoLista *proximo;
+  struct NoLista *anterior;
+} NoLista;
+
+typedef struct Lista{
+  NoLista *cabeca;
+  NoLista *ultimo;
+} Lista;
+
+// Busca
+NoLista* buscar(int chave, Lista *lista) {
+    NoLista *aux = lista->cabeca;
+    if (aux == NULL) {
+        return NULL; // Lista está vazia
+    }
+    do {
+        if (aux->chave == chave) {
+            return aux;
+        }
+        aux = aux->proximo;
+    } while (aux != lista->cabeca);
+    return NULL; // Elemento não encontrado
+}
+
+// Inserir
+void inserir(Lista *lista, int valor) {
+    NoLista *no = malloc(sizeof(NoLista));
+    no->chave = valor;
+    // Verificar se a lista está vazia
+    if (lista->cabeca == NULL) {
+        lista->cabeca = no;
+        lista->ultimo = no;
+        no->proximo = no; // A lista é circular
+        no->anterior = no;
+        contador++;
+    } else {
+        // Verificar se o elemento já existe
+        if (buscar(no->chave, lista) != NULL) {
+            printf("Erro. Elemento já existe na lista\n");
+            free(no);
+            return;
+        }
+
+        NoLista *aux = lista->cabeca;
+        // Se for o menor elemento, inserir no início da lista
+        if (no->chave < lista->cabeca->chave) {
+            no->proximo = lista->cabeca;
+            no->anterior = lista->ultimo;
+            lista->ultimo->proximo = no;
+            lista->cabeca->anterior = no;
+            lista->cabeca = no; // Atualizar o cabeça
+        } else {
+            aux = lista->cabeca;
+            // Percorre a lista até achar a posição correta
+            while (aux->proximo != lista->cabeca && aux->proximo->chave < no->chave) {
+                aux = aux->proximo;
+            }
+            // Inserir no meio ou no final
+            no->proximo = aux->proximo;
+            no->anterior = aux;
+            aux->proximo->anterior = no;
+            aux->proximo = no;
+
+            // Se for o maior elemento, insere no final
+            if (no->proximo == lista->cabeca) {
+                lista->ultimo = no;
+            }
+        }
+        contador++;
+        printf("Elemento inserido! \n");
+    }
+}
+
+// Remover
+void remover(int chave, Lista *lista) {
+    NoLista *aux = buscar(chave, lista);
+    if (aux == NULL) {
+        printf("Elemento não encontrado! \n");
+        return;
+    }
+
+    // Atualizar ponteiros dos nós 
+    if (aux == lista->cabeca && aux == lista->ultimo) { // Verificando se a lista só possui o cabeça
+        lista->cabeca = NULL;
+        lista->ultimo = NULL;
+    } else {
+        aux->anterior->proximo = aux->proximo;
+        aux->proximo->anterior = aux->anterior;
+
+        if (aux == lista->cabeca) {
+            lista->cabeca = aux->proximo;
+        }
+        if (aux == lista->ultimo) {
+            lista->ultimo = aux->anterior;
+        }
+    }
+
+    free(aux);
+    contador--;
+    printf("Elemento removido!\n");
+}
+
+// Imprimir lista direto
+void imprimirDireto(Lista *lista) {
+    if (lista->cabeca == NULL) {
+        printf("A lista está vazia!\n");
+        return;
+    }
+
+    NoLista *aux = lista->cabeca;
+    printf("Lista direta: ");
+    do {
+        printf("%d ", aux->chave);
+        aux = aux->proximo;
+    } while (aux != lista->cabeca);
+    printf("\n");
+}
+
+// Imprimir lista inverso
+void imprimirInverso(Lista *lista) {
+    if (lista->cabeca == NULL) {
+        printf("A lista está vazia!\n");
+        return;
+    }
+
+    NoLista *aux = lista->ultimo;
+    printf("Lista inversa: ");
+    do {
+        printf("%d ", aux->chave);
+        aux = aux->anterior;
+    } while (aux != lista->ultimo);
+    printf("\n");
+}
+
+// Função principal
+int main(void) {
+    Lista *l = malloc(sizeof(Lista));
+    l->cabeca = NULL;
+    l->ultimo = NULL;
+
+    int op, chave;
+
+    do {
+        printf("\n Digitem um valor para as operações:\n1. Inserir\n2. Remover\n3. Buscar\n4. Imprimir lista diretamento\n5. Imprimir lista inversamente\n6. Sair do programa\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &op);
+        getchar();
+
+        switch (op) {
+            case 1:
+                printf("Digite o valor a ser inserido: ");
+                scanf("%d", &chave);
+                getchar();
+                inserir(l, chave);
+                break;
+            case 2:
+                printf("Digite a chave a ser removida: ");
+                scanf("%d", &chave);
+                getchar();
+                remover(chave, l);
+                break;
+            case 3: {
+                printf("Digite a chave a ser buscada: ");
+                scanf("%d", &chave);
+                getchar();
+                NoLista *res = buscar(chave, l);
+                if (res != NULL) {
+                    printf("Elemento %d encontrado!\n", res->chave);
+                } else {
+                    printf("Elemento não encontrado!\n");
+                }
+                break;
+            }
+            case 4:
+                imprimirDireto(l);
+                break;
+            case 5:
+                imprimirInverso(l);
+                break;
+            case 6:
+                exit(0);
+            default:
+                printf("Opção inválida!\n");
+                break;
+        }
+    } while (op != 6);
+
+    return 0;
+}
