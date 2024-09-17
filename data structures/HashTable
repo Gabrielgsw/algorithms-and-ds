@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Discente: Gabriel Germano dos Santos Wanderley
+
+// Definindo estruturas básicas
+
+typedef struct NoListaEncadeada{
+  int chave;
+  struct NoListaEncadeada *proximo;  
+}NoListaEncadeada;
+
+typedef struct ListaEncadeada{
+  NoListaEncadeada *cabeca;
+}ListaEncadeada;
+
+
+typedef struct NoHashTable{
+    int chave;
+    
+}NoHashTable;
+
+
+
+// Open Hash
+typedef struct OpenHashTable{
+    int m;
+    int quantidadeElementos;
+    NoListaEncadeada **tableListaEnc;
+    NoHashTable *table;
+}OpenHashTable;
+
+// Implementando a Hash function
+int gerarHash(int k, int m){
+    return k % m;
+}
+
+
+// Inserção open Hash table
+
+int inserirOpenHashTable(int no, OpenHashTable *hashTable){
+  int i = 0;
+  int k = gerarHash(no,hashTable->m);
+  int aux = k;  
+
+  while(hashTable->table[k].chave != -1){
+      // Verificando se elemento já existe na tabela
+      if(hashTable->table[aux].chave == no){
+          return -1; // indica que o elemento já existe na tabela
+      }
+  
+    i++; 
+    //Rehashing
+    k = (aux + i) % hashTable->m;
+
+    // Verificando se a tabela está cheia
+    if(i == hashTable->m){
+        //criando o novo elemento e atribuindo o nó do argumento
+        NoListaEncadeada *novoNo = malloc(sizeof(NoListaEncadeada));
+        novoNo->chave = no;
+        novoNo->proximo = NULL;
+        //Inserir na lista encadeada correspondende
+        if(hashTable->tableListaEnc[aux] == NULL){
+            hashTable->tableListaEnc[aux] = novoNo;
+        }else if(hashTable->tableListaEnc[aux] != NULL){
+            //criando novo nó auxiliar
+            NoListaEncadeada *aux1 = hashTable->tableListaEnc[aux];
+            //percorrendo a lista encadeada
+            while(aux1->proximo != NULL){
+                aux1 = aux1->proximo;
+            }
+            //inserindo novo nó na lista encadeada
+            aux1->proximo = novoNo;
+        }
+        printf("elemento inserido closed\n");
+        return 1; // indicando que foi inserido na lista encadeada
+    }
+
+  }
+    // Inserindo elemento na tabela open, caso não esteja completa
+    if(hashTable->quantidadeElementos < hashTable->m){
+        hashTable->table[k].chave = no;
+        hashTable->quantidadeElementos++;
+    }
+    printf("elemento inserido open \n");
+    return 1;
+}
+
+
+
+
+int main(void) {
+  OpenHashTable* tabela = malloc(sizeof(OpenHashTable));
+    tabela->m = 10;
+    tabela->quantidadeElementos = 0;
+    tabela->table = malloc(tabela->m*sizeof(NoHashTable));
+    tabela->tableListaEnc = malloc(tabela->m * sizeof(NoListaEncadeada*));//OpenHashTable t = tabela->m 10;
+
+    for(int i = 0; i < tabela->m; i++){
+        tabela->table[i].chave = -1; // indicando que a posição não está preenchida
+        tabela->tableListaEnc[i] = NULL; // iniciando como NULL as listas encadeadas
+    }
+
+    inserirOpenHashTable(20, tabela);
+    inserirOpenHashTable(30, tabela);
+    inserirOpenHashTable(50, tabela);
+    inserirOpenHashTable(110, tabela);
+    inserirOpenHashTable(213, tabela);
+    inserirOpenHashTable(22, tabela);
+    inserirOpenHashTable(21, tabela);
+    inserirOpenHashTable(12, tabela);
+    inserirOpenHashTable(17, tabela);
+    inserirOpenHashTable(19, tabela);
+    inserirOpenHashTable(26, tabela);
+    inserirOpenHashTable(23, tabela);
+    inserirOpenHashTable(24, tabela);
+    inserirOpenHashTable(734, tabela);
+    inserirOpenHashTable(244, tabela);
+    inserirOpenHashTable(234, tabela);
+    inserirOpenHashTable(554, tabela);
+    inserirOpenHashTable(44, tabela);
+    inserirOpenHashTable(77, tabela);
+    inserirOpenHashTable(994, tabela);
+    inserirOpenHashTable(12, tabela);
+ 
+  
+  
+}
